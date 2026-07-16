@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>公司项目看板</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="overrides.css" />
+  <link rel="stylesheet" href="taste-audit.css" />
+  <link rel="stylesheet" href="color-reset.css" />
+  <link rel="stylesheet" href="workflow-data.css" />
+</head>
+<body>
+  <a class="skip-link" href="#projects">跳到项目列表</a>
+  <aside class="sidebar">
+    <a class="brand" href="#overview"><span class="brand-mark">P</span><span>PULSE<br>BOARD</span></a>
+    <nav aria-label="主导航">
+      <a class="nav-item active" href="#overview"><i>◈</i>项目总览</a>
+      <a class="nav-item" href="#projects"><i>↗</i>项目流转</a>
+      <a class="nav-item" href="#trends"><i>⌁</i>趋势验证</a>
+    </nav>
+    <div class="side-bottom"><p class="eyebrow">CURRENT CYCLE</p><strong>2026 · Q3</strong><small>第 3 / 13 周</small><div class="user"><span>ML</span><b>曼斯菲尔德<small>总经办</small></b></div></div>
+  </aside>
+  <main>
+    <header class="topbar" id="overview">
+      <div><p class="breadcrumb">公司工作台 / 项目与趋势</p><h1>公司正在做什么，<em>一眼看清。</em></h1><p class="header-sub">追踪开发项目、正在验证的内容趋势，以及每个项目所处的真实阶段。</p></div>
+      <div class="top-actions"><button class="ghost-btn" id="dataGuide">数据口径</button><button class="ghost-btn" id="modelExplain">增长模型说明</button><button class="primary-btn" id="addProject">＋ 新建项目</button></div>
+    </header>
+
+    <section class="command-strip" aria-label="本季度摘要">
+      <article><span class="eyebrow">开发中项目</span><strong id="activeProjects">05</strong><p>覆盖市场、产品与增长协同</p></article>
+      <article><span class="eyebrow">验证中趋势</span><strong id="activeTrends">03</strong><p>均已关联明确的产品假设</p></article>
+      <article class="north-star"><span class="eyebrow">Q3 核心目标</span><h2>验证 <b>3 个</b>可规模化增长模型</h2><button id="modelExplainSecondary">查看验证标准 →</button></article>
+      <article class="attention"><span class="eyebrow">需要协同</span><strong id="attentionCount">02</strong><p>1 个资源决策 · 1 个趋势待确认</p></article>
+    </section>
+
+    <section class="stage-section" aria-labelledby="stageTitle">
+      <div class="section-title"><div><p class="eyebrow">PROJECT DISTRIBUTION</p><h2 id="stageTitle">项目目前到达哪个阶段？</h2></div><span class="hint">点击阶段筛选项目</span></div>
+      <div class="stage-tabs" id="stageTabs" role="tablist">
+        <button class="stage-tab active" data-stage="all"><span>全部</span><b id="allCount">05</b></button>
+        <button class="stage-tab" data-stage="0"><span>01 立项</span><b id="stage0Count">01</b><small>机会定义</small></button>
+        <button class="stage-tab" data-stage="1"><span>02 趋势验证</span><b id="stage1Count">01</b><small>信号确认</small></button>
+        <button class="stage-tab" data-stage="2"><span>03 Demo MVP</span><b id="stage2Count">02</b><small>最小化验证</small></button>
+        <button class="stage-tab" data-stage="3"><span>04 小流量测试</span><b id="stage3Count">01</b><small>转化试验</small></button>
+        <button class="stage-tab" data-stage="4"><span>05 规模转化</span><b id="stage4Count">00</b><small>复制放大</small></button>
+      </div>
+    </section>
+
+    <div class="content-grid">
+      <section class="project-panel" id="projects">
+        <div class="panel-head"><div><p class="eyebrow">ACTIVE DEVELOPMENT</p><h2>正在开发的项目</h2></div><div class="project-tools"><label class="search"><span>⌕</span><input id="projectSearch" placeholder="搜索项目、负责人或趋势" /></label><button class="filter-btn" id="clearFilter">显示全部</button></div></div>
+        <div class="filter-note" id="filterNote" aria-live="polite">当前显示全部 5 个开发项目</div>
+        <div class="project-table" role="table">
+          <div class="table-head" role="row"><span>项目 / 当前工作</span><span>关联趋势</span><span>负责人</span><span>当前阶段</span><span>下一步</span></div>
+          <div id="projectRows"></div>
+        </div>
+        <div class="empty-state" id="emptyState" hidden><b>未找到匹配的项目</b><span>尝试切换阶段，或清除当前筛选。</span></div>
+      </section>
+
+      <aside class="trend-panel" id="trends">
+        <div class="panel-head"><div><p class="eyebrow">TREND VALIDATION</p><h2>正在验证的趋势</h2></div><button class="icon-btn" id="resetTrend" aria-label="清除趋势筛选">↺</button></div>
+        <p class="panel-intro">趋势不是素材库；每个信号都需要明确关联一个项目与可验证的功能假设。</p>
+        <div class="trend-list" id="trendList"></div>
+        <button class="trend-action" id="openTrendMap">＋ 建立趋势 → 项目映射</button>
+      </aside>
+    </div>
+  </main>
+
+  <aside class="detail-drawer" id="detailDrawer" aria-hidden="true"><div class="drawer-head"><div><p class="eyebrow" id="drawerEyebrow">PROJECT DETAIL</p><h2 id="drawerTitle">项目详情</h2></div><button class="close-btn" id="drawerClose" aria-label="关闭详情">×</button></div><div id="drawerContent"></div></aside><div class="drawer-overlay" id="drawerOverlay"></div>
+
+  <dialog id="projectDialog"><form id="projectForm"><button class="dialog-close" type="button" aria-label="关闭">×</button><p class="eyebrow">NEW INITIATIVE</p><h2>创建新的增长项目</h2><p class="dialog-lead">完成立项后，项目会立即出现在流转列表中；趋势与责任人会成为全公司可见的上下文。</p><label>项目名称<input id="newProjectName" required placeholder="例如：职场能量补给" autofocus></label><label>项目介绍<textarea id="newProjectIntro" required rows="3" placeholder="要解决的用户问题、核心假设和预期成果"></textarea></label><label>最初的趋势信号<select id="newProjectSignal" required><option value="">选择内容趋势</option><option>情绪陪伴</option><option>健康饮食</option><option>城市生活</option><option>效率工具</option></select></label><label id="trendLinkField" class="conditional">趋势内容链接<input id="trendLink" type="url" placeholder="粘贴视频或内容链接"><small>用于回溯趋势来源与后续分析。</small></label><div class="people-grid"><label>项目负责人<input id="projectOwner" required placeholder="例如：林阳（市场）"></label><label>参与人员<input id="projectMembers" required placeholder="例如：陈语、景珂"></label></div><div class="dialog-actions"><button type="button" class="secondary-btn cancel-dialog">取消</button><button type="submit" class="primary-btn">创建并进入立项 →</button></div></form></dialog>
+  <dialog id="trendDialog"><form id="trendForm"><button class="dialog-close" type="button" aria-label="关闭">×</button><p class="eyebrow">TREND TO PROJECT</p><h2>建立趋势与项目的映射</h2><label>趋势名称<input id="trendName" required placeholder="例如：低耗能社交"></label><label>趋势内容链接<input id="trendUrl" type="url" required placeholder="粘贴视频或内容链接"></label><label>关联项目<select id="trendProject" required></select></label><label>待验证的产品假设<textarea id="trendHypothesis" rows="3" required placeholder="例如：用户是否愿意进入…"></textarea></label><div class="dialog-actions"><button type="button" class="secondary-btn cancel-dialog">取消</button><button class="primary-btn" type="submit">保存映射 →</button></div></form></dialog>
+  <dialog id="advanceDialog"><form id="advanceForm"><p class="eyebrow">CONFIRM STAGE CHANGE</p><h2 id="advanceTitle">确认推进项目？</h2><p class="dialog-lead" id="advanceCopy"></p><label class="confirm-check"><input id="advanceCheck" type="checkbox" required>我确认当前阶段的关键验证已完成，并同意记录本次流转</label><div class="dialog-actions"><button type="button" class="secondary-btn cancel-dialog">返回检查</button><button type="submit" class="primary-btn">确认推进 →</button></div></form></dialog>
+  <dialog id="modelDialog" class="wide-dialog"><form method="dialog"><button class="dialog-close" aria-label="关闭">×</button><p class="eyebrow">Q3 GROWTH MODEL</p><h2>可规模化增长模型的判断标准</h2><p class="dialog-lead">只有同时跑通「趋势需求 → 最小化体验 → 人群转化 → 可复制留存」的项目，才进入规模化候选池。</p><div class="model-grid"><article><span>01</span><h3>趋势需求成立</h3><p>信号持续增长，且目标人群存在具体痛点。</p><b>内容互动 ≥ 6%</b></article><article><span>02</span><h3>最小化体验有效</h3><p>Demo 让用户愿意行动，而非只停留在浏览。</p><b>Demo 意向 ≥ 5%</b></article><article><span>03</span><h3>留存可以复制</h3><p>运营与产品路径能扩展到更多内容与人群。</p><b>首周留存 ≥ 25%</b></article></div><div class="dialog-actions"><button class="primary-btn" value="default">我已了解</button></div></form></dialog>
+  <dialog id="metricDialog"><form id="metricForm"><button class="dialog-close" type="button" aria-label="关闭">×</button><p class="eyebrow">VERIFICATION METRIC</p><h2 id="metricDialogTitle">维护验证指标</h2><input id="metricProjectId" type="hidden"><input id="metricIndex" type="hidden"><label>指标名称<input id="metricName" required placeholder="例如：Demo 意向率"></label><div class="people-grid"><label>当前值<input id="metricValue" required placeholder="例如：6.7%"></label><label>数据来源<input id="metricSource" required placeholder="例如：7/15 用户问卷"></label></div><label>指标说明<textarea id="metricNote" rows="2" placeholder="说明计算口径或本轮验证结论"></textarea></label><div class="dialog-actions"><button type="button" class="secondary-btn cancel-dialog">取消</button><button class="primary-btn" type="submit">保存指标 →</button></div></form></dialog>
+  <dialog id="taskDialog"><form id="taskForm"><button class="dialog-close" type="button" aria-label="关闭">×</button><p class="eyebrow">NEXT ACTION</p><h2>添加下一步任务</h2><input id="taskProjectId" type="hidden"><label>任务内容<input id="taskTitle" required placeholder="例如：完成首批用户访谈"></label><div class="people-grid"><label>负责人<input id="taskOwner" required placeholder="例如：陈语（产品）"></label><label>截止日期<input id="taskDue" type="date" required></label></div><label>完成标准<textarea id="taskDone" rows="2" required placeholder="完成后需要交付什么或达成什么结果"></textarea></label><div class="dialog-actions"><button type="button" class="secondary-btn cancel-dialog">取消</button><button class="primary-btn" type="submit">添加任务 →</button></div></form></dialog>
+  <dialog id="dataDialog" class="wide-dialog"><form method="dialog"><button class="dialog-close" aria-label="关闭">×</button><p class="eyebrow">DATA LINEAGE</p><h2>看板数据从哪里来？</h2><div class="data-guide-grid"><article><h3>开发中项目</h3><p>由项目列表实时计数。新增项目后会自动进入“立项”阶段。</p></article><article><h3>验证中趋势</h3><p>由趋势映射列表计数。每条趋势必须关联项目、来源链接和验证假设。</p></article><article><h3>阶段分布</h3><p>由每个项目当前阶段实时汇总。阶段变更须经过确认并写入活动记录。</p></article><article><h3>项目指标</h3><p>由项目负责人录入。每个指标包含当前值、数据来源和口径说明。</p></article></div><div class="data-log" id="dataLog"></div><div class="dialog-actions"><button class="secondary-btn" id="resetData" type="button">恢复演示数据</button><button class="primary-btn" value="default">我已了解</button></div></form></dialog>
+  <div class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js?v=2"></script>
+</body>
+</html>
