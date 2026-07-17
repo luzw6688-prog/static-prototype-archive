@@ -19,6 +19,8 @@ create table if not exists public.projects (
   intro text not null,
   stage smallint not null default 0 check (stage between 0 and 4),
   trend text not null,
+  category text not null default '未分类',
+  subcategory text not null default '待补充',
   owner text not null,
   members text not null,
   next_action text not null default '请添加第一个可验证任务。',
