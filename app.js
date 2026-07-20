@@ -75,15 +75,29 @@ function renderAuth(){
 }
 
 function renderCounts(){
-  const counts=stages.map((_,i)=>state.projects.filter(p=>p.stage===i).length);
   const stats=decisionStats();
   const values={activeProjects:stats.active.current,weeklyConclusions:stats.conclusions.current,pendingDecisions:stats.pending.current,riskProjects:stats.risk.current,scaleCandidates:stats.scale.current};
   Object.entries(values).forEach(([id,value])=>{$(`#${id}`).textContent=String(value).padStart(2,'0')});
   [['activeProjectsDelta',stats.active],['weeklyConclusionsDelta',stats.conclusions],['pendingDecisionsDelta',stats.pending],['riskProjectsDelta',stats.risk],['scaleCandidatesDelta',stats.scale]].forEach(([id,data])=>renderDelta(id,data.current-data.previous));
   $('#decisionWeekRange').textContent=`${formatShortDate(stats.weekStart)} — ${formatShortDate(stats.weekEnd)} · 数据实时更新`;
   $$('[data-command-filter]').forEach(card=>{const active=selectedCommandFilter===card.dataset.commandFilter,alert=Number(card.querySelector('strong').textContent)>0;card.classList.toggle('active',active);card.classList.toggle('has-alert',alert);card.setAttribute('aria-pressed',String(active))});
+  renderStageFunnel();
+}
+
+function stageEnteredAt(p){
+  const marker=`调整至「${stages[p.stage]}」`;
+  const entry=state.activity.find(a=>a.project_id===p.id&&a.type==='阶段流转'&&a.text.includes(marker));
+  const value=new Date(entry?.created_at||p.created_at);
+  return Number.isFinite(value.getTime())?value:new Date();
+}
+function stageFunnelStats(){
+  const total=state.projects.length,now=Date.now();
+  return stages.map((_,stage)=>{const projects=state.projects.filter(p=>p.stage===stage),dwell=projects.map(p=>Math.max(0,(now-stageEnteredAt(p).getTime())/86400000));return {count:projects.length,share:total?Math.round(projects.length/total*100):0,average:dwell.length?dwell.reduce((sum,n)=>sum+n,0)/dwell.length:0,overdue:projects.filter(p=>p.tasks.some(t=>!t.done&&t.due<today())).length}});
+}
+function renderStageFunnel(){
+  const stats=stageFunnelStats();
   $('#allCount').textContent=String(state.projects.length).padStart(2,'0');
-  counts.forEach((n,i)=>{$(`#stage${i}Count`).textContent=String(n).padStart(2,'0')});
+  stats.forEach((item,i)=>{$(`#stage${i}Count`).textContent=String(item.count).padStart(2,'0');$(`#stage${i}Share`).textContent=`${item.share}%`;$(`#stage${i}Dwell`).textContent=`${item.average.toFixed(1)} 天`;$(`#stage${i}Overdue`).textContent=String(item.overdue);$(`#stage${i}Bar`).style.width=`${item.share}%`;const tab=$(`.stage-tab[data-stage="${i}"]`);tab.classList.toggle('has-overdue',item.overdue>0)});
 }
 
 function startOfWeek(date=new Date()){const value=new Date(date);value.setHours(0,0,0,0);value.setDate(value.getDate()-((value.getDay()+6)%7));return value}
@@ -145,7 +159,7 @@ function openDrawer(p){
 }
 
 function closeDrawer(){$('#detailDrawer').classList.remove('open');$('#drawerOverlay').classList.remove('open');$('#detailDrawer').setAttribute('aria-hidden','true')}
-function setStage(stage){selectedStage=stage;$$('.stage-tab').forEach(tab=>tab.classList.toggle('active',tab.dataset.stage===String(stage)));renderProjects()}
+function setStage(stage){selectedStage=stage;$$('.stage-tab').forEach(tab=>{const active=tab.dataset.stage===String(stage);tab.classList.toggle('active',active);tab.setAttribute('aria-pressed',String(active))});const all=stage==='all';$('#allStages').classList.toggle('active',all);$('#allStages').setAttribute('aria-pressed',String(all));renderProjects()}
 function requestStage(projectId,target){if(!requireAdmin())return;const p=project(projectId);if(!p||target===p.stage)return;pendingProject=projectId;pendingStage=target;$('#advanceTitle').textContent=`确认调整至「${stages[target]}」？`;$('#advanceCopy').textContent=`「${p.name}」将从「${stages[p.stage]}」调整为「${stages[target]}」。系统会保留本次变更记录。`;$('#advanceCheck').checked=false;$('#advanceDialog').showModal()}
 
 function populateCategories(){const select=$('#projectCategory');select.innerHTML=`<option value="">选择一级类别</option>${Object.keys(appCategories).map(name=>`<option value="${name}">${name}</option>`).join('')}`}
@@ -168,7 +182,7 @@ $('#openTrendMap').addEventListener('click',()=>{if(requireAdmin())$('#trendDial
 $('#trendForm').addEventListener('submit',async e=>{e.preventDefault();const form=e.currentTarget,name=$('#trendName').value.trim(),url=$('#trendUrl').value.trim(),projectId=$('#trendProject').value,hypothesis=$('#trendHypothesis').value.trim(),p=project(projectId);if(!name||!url||!p||!hypothesis)return;setBusy(form,true);const ok=await mutate(async()=>{const {error}=await db.from('trends').insert({project_id:projectId,name,url,hypothesis});if(error)throw error;const {error:projectError}=await db.from('projects').update({trend:name}).eq('id',projectId);if(projectError)throw projectError;await writeLog(projectId,`将趋势「${name}」关联到项目「${p.name}」`,'趋势映射')},`趋势已关联到「${p.name}」。`);setBusy(form,false);if(ok){$('#trendDialog').close();form.reset();selectedTrend=name;renderAll()}});
 
 $('.decision-strip').addEventListener('click',e=>{const card=e.target.closest('[data-command-filter]');if(!card)return;selectedCommandFilter=selectedCommandFilter===card.dataset.commandFilter?'':card.dataset.commandFilter;renderCounts();renderProjects();document.querySelector('#projects').scrollIntoView({behavior:'smooth',block:'start'})});
-$('#stageTabs').addEventListener('click',e=>{const tab=e.target.closest('.stage-tab');if(tab)setStage(tab.dataset.stage)});$('#projectSearch').addEventListener('input',e=>{searchTerm=e.target.value.trim();renderProjects()});$('#clearFilter').addEventListener('click',()=>{selectedTrend='';selectedCommandFilter='';searchTerm='';$('#projectSearch').value='';setStage('all');renderCounts();renderTrends()});$('#projectRows').addEventListener('click',e=>{const row=e.target.closest('.project-row');if(row)openDrawer(project(row.dataset.project))});$('#projectRows').addEventListener('keydown',e=>{if(e.key==='Enter'){const row=e.target.closest('.project-row');if(row)openDrawer(project(row.dataset.project))}});
+$('#stageTabs').addEventListener('click',e=>{const tab=e.target.closest('.stage-tab');if(tab)setStage(tab.dataset.stage)});$('#allStages').addEventListener('click',()=>setStage('all'));$('#projectSearch').addEventListener('input',e=>{searchTerm=e.target.value.trim();renderProjects()});$('#clearFilter').addEventListener('click',()=>{selectedTrend='';selectedCommandFilter='';searchTerm='';$('#projectSearch').value='';setStage('all');renderCounts();renderTrends()});$('#projectRows').addEventListener('click',e=>{const row=e.target.closest('.project-row');if(row)openDrawer(project(row.dataset.project))});$('#projectRows').addEventListener('keydown',e=>{if(e.key==='Enter'){const row=e.target.closest('.project-row');if(row)openDrawer(project(row.dataset.project))}});
 $('#trendList').addEventListener('click',e=>{const card=e.target.closest('.trend-card');if(!card)return;const t=state.trends.find(x=>x.id===card.dataset.trend);selectedTrend=selectedTrend===t.name?'':t.name;setStage('all');renderTrends();notice(selectedTrend?`已筛选关联「${t.name}」的项目。`:'已显示全部项目。')});$('#resetTrend').addEventListener('click',()=>{selectedTrend='';renderProjects();renderTrends()});$('#drawerClose').addEventListener('click',closeDrawer);$('#drawerOverlay').addEventListener('click',closeDrawer);
 
 $('#drawerContent').addEventListener('click',async e=>{const stage=e.target.dataset.stageSelect,projectId=e.target.dataset.project;if(stage!==undefined)requestStage(projectId,Number(stage));if(e.target.dataset.advance){const p=project(e.target.dataset.advance);requestStage(p.id,Math.min(p.stage+1,4))}if(e.target.dataset.addMetric)openMetric(e.target.dataset.addMetric);if(e.target.dataset.editMetric)openMetric(e.target.dataset.project,e.target.dataset.editMetric);if(e.target.dataset.addTask)openTask(e.target.dataset.addTask);if(e.target.dataset.editProject)openEditProject(project(e.target.dataset.editProject));if(e.target.dataset.deleteProject){const p=project(e.target.dataset.deleteProject);if(!confirm(`确认删除项目「${p.name}」？删除后可在“数据口径”中恢复。`))return;const ok=await mutate(async()=>{const {error}=await db.from('projects').update({deleted_at:new Date().toISOString()}).eq('id',p.id);if(error)throw error;await writeLog(p.id,`删除项目「${p.name}」`,'删除')},'项目已移入已删除列表。');if(ok)closeDrawer()}});
